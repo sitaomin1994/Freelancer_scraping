@@ -136,7 +136,7 @@ async def get_each_requests(url, h, params , cursor, connection, index_id, proje
             result.append(project['id'])  # project id - int
             result.append(project['owner_id'] if project["owner_id"] != None else 0)  # owner_id - int
             result.append(project['bidperiod'] if project['bidperiod'] != None else -1)  # bid period - int
-            result.append(project['title'].replace("'", "") if project['title'] != None else 'null')  # title - string
+            result.append(project['title'].replace("'", "").replace("\\","") if project['title'] != None else 'null')  # title - string
 
             try:
                 result.append(project['currency']['code'] if project['currency'][

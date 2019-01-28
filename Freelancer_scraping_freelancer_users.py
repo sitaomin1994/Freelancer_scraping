@@ -277,7 +277,7 @@ if create_progress_table == 1:
 		cursor.execute(sql)
 
 
-sql = """CREATE TABLE IF NOT EXISTS FREELANCERS (
+		sql = """CREATE TABLE IF NOT EXISTS FREELANCERS (
 				 user_id INT, 
 				 status TEXT,
 				 primary_language VARCHAR(20), 
@@ -335,13 +335,8 @@ sql = """CREATE TABLE IF NOT EXISTS FREELANCERS (
 				 qualifications_score TEXT,
 				 qualifications_percentile TEXT,
 				 PRIMARY KEY(user_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8"""
-cursor.execute(sql)
+		cursor.execute(sql)
 
-# update and get progress information
-#SQL_update_progress_pj = """
-#                        REPLACE INTO BIDS_PROGRESS (project_id) SELECT product_id FROM PROJECT;
-#                        """
-#cursor.execute(SQL_update_progress_pj)
 
 SQL_all_freelancers_id = """SELECT DISTINCT user_id FROM FREELANCERS_PROGRESS WHERE extracted = 0 ORDER BY user_id ASC;"""
 
