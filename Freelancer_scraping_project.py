@@ -150,7 +150,7 @@ def get_product_list(project_list, cursor, connection):
         url = 'https://www.freelancer.com/api/projects/0.1/projects/'
 
         response = requests.get(url, headers = h, params = params)
-        print(json.dumps(response.json()))
+        #print(json.dumps(response.json()))
 
         ERROR_SIGN_PROJECT = False
         ERROR_SIGN_REQUEST = False

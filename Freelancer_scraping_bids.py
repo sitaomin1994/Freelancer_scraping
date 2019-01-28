@@ -141,7 +141,7 @@ def get_bids_info(project_list, times, cursor, connection):
         '''
         change token
         '''
-        if (count == 500):
+        if (count == 300):
             token_index, token = generate_new_token(token_index)
             count = 1
         else:
@@ -203,7 +203,7 @@ def get_bids_info(project_list, times, cursor, connection):
                         json.dumps(bid['negotiated_offer']).replace("'",""),
                         bid['retracted'] if bid['retracted'] != None else False,
                         emoji_pattern.sub(r'', bid['description'].replace('\n', '')
-                             .replace('\r', '').replace("'", "")) if bid['description'] != None else 'null',
+                             .replace('\r', '').replace("'", "").replace("\\","")) if bid['description'] != None else 'null',
                         bid['award_status'] if bid['award_status'] != None else "null",
                         bid['paid_status'] if bid['paid_status'] != None else "null",
                         bid['complete_status'] if bid['complete_status'] != None else "null",
