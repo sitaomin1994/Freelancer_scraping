@@ -96,14 +96,18 @@ Steps:
 '''
 token pool
 '''
-token_pool = ['ZRniSmKyNOsleIvwbewpo010SUjj1c', '70JLAsFS7EGsAhpLP3OpDNi8KdWyY6', 'MFaVEKYgsVQpzj6873yjEELFwXirfh',
+token_pool = ['vRFZUqclBzv7VzpyTJ3vfrc8RwvoGq', 'AXGnj1OHV5Le3jKhrdobCl4tZ2q9cm', 'YwQ2ZFfJehpUj7UEOGpUn3y5pcpUtJ',
+              'IHPDP3HoqjWX1tTqUtMu4EAqxlMRlW', '5qfr3iCqMgBerHmZJDMO3Co2AV3a4d', 'qIo7Id3Dcdw528IzQU59K94I3cXWHZ',
+              'jDaI7PSRa8H375Bn4B81mb6IlvS3sc', 'FtQ20tausNVHvCpKBInosYFjv4FPTP', 'Z3XgZKiXp7QgPwqRKB9tnKcFnLt1eb',
+              'pRq8XNGo0J14kA7JnXOXy2KJfSjsCR', 'zURlph7AJqSNtcUFlZUxmKlr5R8XRd', '0oUrcZIfew5qHbvgpZE5rN5s2Le4UF',
+              'ZRniSmKyNOsleIvwbewpo010SUjj1c', '70JLAsFS7EGsAhpLP3OpDNi8KdWyY6', 'MFaVEKYgsVQpzj6873yjEELFwXirfh',
               'W5o5gKLpto1PP2IkcLOYSpPOKwdRrN', 'CRRyGUzV1RZ5xWcMuekPHcfsga2rjB', 'GRxcyLUGeyWYPtUX5UqGitsPltz71r',
               'hZQu6m1ZnDM2kX7a7p8o3F9K2TwfxK', 'oOhhrEtDBH7baQh40XdyS6DbQ8kGFI', 'cD13eyJTXQtnq4aFJ80s2OhDiiAau9',
               'nU658pr3A5JGNrBRva8REiLCO26gPG', 'ILaVdFV86G7VF2AgCU140mLTjJTiU2',
-              'vRFZUqclBzv7VzpyTJ3vfrc8RwvoGq', 'AXGnj1OHV5Le3jKhrdobCl4tZ2q9cm', 'YwQ2ZFfJehpUj7UEOGpUn3y5pcpUtJ',
-              'IHPDP3HoqjWX1tTqUtMu4EAqxlMRlW', '5qfr3iCqMgBerHmZJDMO3Co2AV3a4d', 'qIo7Id3Dcdw528IzQU59K94I3cXWHZ',
-              'jDaI7PSRa8H375Bn4B81mb6IlvS3sc', 'FtQ20tausNVHvCpKBInosYFjv4FPTP', 'Z3XgZKiXp7QgPwqRKB9tnKcFnLt1eb',
-              'pRq8XNGo0J14kA7JnXOXy2KJfSjsCR', 'zURlph7AJqSNtcUFlZUxmKlr5R8XRd', '0oUrcZIfew5qHbvgpZE5rN5s2Le4UF']
+              'pRq8XNGo0J14kA7JnXOXy2KJfSjsCR', 'zURlph7AJqSNtcUFlZUxmKlr5R8XRd', '0oUrcZIfew5qHbvgpZE5rN5s2Le4UF',
+              'rUrJBnpCfqMtxcyM2JGESR0mrt3x8I', 'W4ySXsyns44POcd7mjfm738sSMAskD', 'qbZmcZyEEs6KzqmezprajUvCQ7U3z4',
+              'OlkUwYjeiAImK62nOCVlA8HNZkVRrg', 'XSWn9mP9xqRRLQ9Qxk5xEtarvUPCOz', 'yARi9t89YJsU5UgMRbN5P5cIhreVEX',
+              'L1CNJPK8YT8qiuPeiT59mAXh3mz7gN', 'jOoCQ3I4syNV6Q0gAkYJdnbVVFgkGh', '7rgvVbzKu0a8iG3MKD24NLqS21gRsl']
 
 def convert_utc_to_date(time):
     return datetime.utcfromtimestamp(time).strftime('%Y-%m-%d %H:%M:%S')
@@ -123,7 +127,8 @@ def generate_new_token(index):
 request url
 """
 async def get(url, h, params):
-    session = aiohttp.ClientSession(read_timeout = None, conn_timeout=None)
+
+    session = aiohttp.ClientSession(read_timeout = 100, conn_timeout= 100)
     response = await session.get(url, headers = h, params = params)
     result = await response.json()
     status = response.status
@@ -181,10 +186,10 @@ async def get_each_requests(url, h, params, project_id, cursor, connection, inde
                 bid['hireme_counter_offer'] if bid['hireme_counter_offer'] != None else -1,
                 bid['highlighted'] if bid['highlighted'] != None else False,
                 bid['sponsored'] if bid['sponsored'] != None else -1,
-                json.dumps(bid['negotiated_offer']).replace("'", ""),
+                json.dumps(bid['negotiated_offer']).replace("'", "").replace("\\",""),
                 bid['retracted'] if bid['retracted'] != None else False,
                 emoji_pattern.sub(r'', bid['description'].replace('\n', '')
-                                  .replace('\r', '').replace("'", "")) if bid['description'] != None else 'null',
+                                  .replace('\r', '').replace("'", "").replace("\\","")) if bid['description'] != None else 'null',
                 bid['award_status'] if bid['award_status'] != None else "null",
                 bid['paid_status'] if bid['paid_status'] != None else "null",
                 bid['complete_status'] if bid['complete_status'] != None else "null",
@@ -232,55 +237,55 @@ async def get_each_requests(url, h, params, project_id, cursor, connection, inde
                 if user_id in users:
                     user_info = users[user_id]
 
-                    result.append(user_info['avatar_large_cdn'].replace("'", "") if user_info[
+                    result.append(user_info['avatar_large_cdn'].replace("'", "").replace("\\","") if user_info[
                                                                                         'avatar_large_cdn'] != None else "null")
                     result.append(
-                        user_info['avatar_cdn'].replace("'", "") if user_info['avatar_cdn'] != None else "null")
+                        user_info['avatar_cdn'].replace("'", "").replace("\\","") if user_info['avatar_cdn'] != None else "null")
                     try:
-                        result.append(json.dumps(user_info['membership_package']['name']).replace("'", ""))
+                        result.append(json.dumps(user_info['membership_package']['name']).replace("'", "").replace("\\",""))
                     except:
                         result.append('null')
 
                     result.append(user_info['portfolio_count'] if user_info['portfolio_count'] != None else -1)
 
-                    result.append(json.dumps(user_info['primary_language']).replace("'", ""))
+                    result.append(json.dumps(user_info['primary_language']).replace("'", "").replace("\\",""))
                     try:
-                        result.append(json.dumps(user_info['primary_currency']['country']).replace("'", ""))
+                        result.append(json.dumps(user_info['primary_currency']['country']).replace("'", "").replace("\\",""))
                     except:
                         result.append('null')
 
                     result.append(user_info['hourly_rate'] if user_info['hourly_rate'] != None else -1)
 
                     try:
-                        result.append(json.dumps(user_info['location']['country']['name']).replace("'", ""))
+                        result.append(json.dumps(user_info['location']['country']['name']).replace("'", "").replace("\\",""))
                     except:
                         result.append('null')
                     try:
-                        result.append(json.dumps(user_info['location']['city']).replace("'", ""))
+                        result.append(json.dumps(user_info['location']['city']).replace("'", "").replace("\\",""))
                     except:
                         result.append('null')
 
-                    result.append(json.dumps(user_info['status']).replace("'", ""))
+                    result.append(json.dumps(user_info['status']).replace("'", "").replace("\\",""))
                     result.append(
                         user_info['preferred_freelancer'] if user_info['preferred_freelancer'] != None else False)
-                    result.append(json.dumps(user_info['qualifications']).replace("'", ""))
+                    result.append(json.dumps(user_info['qualifications']).replace("'", "").replace("\\",""))
 
                     try:
-                        result.append(json.dumps([q.get('type') for q in user_info['qualifications']]).replace("'", ""))
+                        result.append(json.dumps([q.get('type') for q in user_info['qualifications']]).replace("'", "").replace("\\",""))
                     except:
                         result.append("null")
 
                     try:
                         result.append(
                             json.dumps([q.get('score_percentage') for q in user_info['qualifications']]).replace("'",
-                                                                                                                 ""))
+                                                                                                                 "").replace("\\",""))
                     except:
                         result.append("null")
 
                     try:
                         result.append(
                             json.dumps([q.get('user_percentile') for q in user_info['qualifications']]).replace("'",
-                                                                                                                ""))
+                                                                                                                "").replace("\\",""))
                     except:
                         result.append("null")
 
@@ -398,7 +403,7 @@ def get_bids_info(project_list, times, cursor, connection):
     tasks = [asyncio.ensure_future(get_each_requests(url, header, params, project_id, cursor, connection, index)) for url,header, params, project_id, index in zip(urls, header_list, params_list, project_id_list, index_list)]
 
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(asyncio.wait(tasks,timeout=90))
+    loop.run_until_complete(asyncio.wait(tasks))
 
     #finally:
     #    loop.run_until_complete(loop.shutdown_asyncgens())
@@ -546,10 +551,8 @@ print("#########################################################################
 
 for i in range(times):
 
-    total_time = main_programm(0,0,100)
+    total_time = main_programm(0,0,200)
     interval = int((i+1)/5)
-    if total_time < 15:
-        time.sleep(300)
     time.sleep(10)
     print("times %d done"%(i))
 

@@ -93,6 +93,7 @@ def generate_new_token(index):
 extract project infomation
 '''
 
+
 def get_product_list(project_list, cursor, connection):
 
     emoji_pattern = re.compile("["

@@ -7,7 +7,7 @@ import asyncio
 import re
 from urllib.parse import urlencode
 from datetime import datetime
-
+import scrapy
 '''
 # FREELANCERS_PROGRESS TABLE is to records what projects we have already fetched their bids info
 # FREELANCERS TABLE information:

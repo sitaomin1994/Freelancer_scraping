@@ -147,193 +147,203 @@ def get_bids_info(project_list, times, cursor, connection):
         else:
             count = count+1
 
-        '''
-        make request
-        '''
-        project_id = project_list[i][0]
-        h = {"Freelancer-OAuth-V1": token}
-        params = {
-            'reputation':True,
-            'project_id': project_id,
-            'reputation': True,
-            'user_details': True,
-            'user_avatar': True,
-            'user_membership_details': True,
-            'user_reputation': True,
-            'user_reputation_extra': True,
-            'user_status': True,
-            'user_portfolio_details': True,
-            'user_preferred_details': True,
-            'user_qualification_details': True
-        }
-        url = 'https://www.freelancer.com/api/projects/0.1/projects/' + str(project_id) + '/bids/'
-
-        #print(project_id)
-        #print(url)
-        response = requests.get(url, headers=h, params=params)
-
-        #print(json.dumps(response.json()))
-
+        hasBids = True
+        offset = 0
+        bids_count = 0
         ERROR_SIGN_BIDS = False
         ERROR_SIGN_REQUEST = False
         error_set = []
-        bids_count = 0
 
-        if response.status_code == 200:
-            bids = response.json()['result']['bids']
-            users = response.json()['result']['users']
-            bids_count = len(bids)
-            number_of_bids += len(bids)
+        while(hasBids):
+            '''
+            make request
+            '''
+            project_id = project_list[i][0]
+            h = {"Freelancer-OAuth-V1": token}
+            params = {
+                'reputation':True,
+                'project_id': project_id,
+                'reputation': True,
+                'user_details': True,
+                'user_avatar': True,
+                'user_membership_details': True,
+                'user_reputation': True,
+                'user_reputation_extra': True,
+                'user_status': True,
+                'user_portfolio_details': True,
+                'user_preferred_details': True,
+                'user_qualification_details': True,
+                'offset': offset
+            }
+            url = 'https://www.freelancer.com/api/projects/0.1/projects/' + str(project_id) + '/bids/'
 
-            for index,bid in enumerate(bids):
-                result = []
-                # get bid information
-                result.extend([
-                        bid['id'],
-                        bid['project_id'] if bid['project_id'] != None else -1,
-                        bid['bidder_id'] if bid['bidder_id'] != None else -1,
-                        index,
-                        convert_utc_to_date(bid['time_submitted'] if bid['time_submitted'] != None else 0),
-                        bid['amount'] if bid['amount'] != None else -1,
-                        bid['hourly_rate'] if bid['hourly_rate'] != None else -1,
-                        bid['period'] if bid['period'] != None else -1,
-                        bid['hireme_counter_offer'] if bid['hireme_counter_offer'] != None else -1,
-                        bid['highlighted'] if bid['highlighted'] != None else False,
-                        bid['sponsored'] if bid['sponsored'] != None else -1,
-                        json.dumps(bid['negotiated_offer']).replace("'",""),
-                        bid['retracted'] if bid['retracted'] != None else False,
-                        emoji_pattern.sub(r'', bid['description'].replace('\n', '')
-                             .replace('\r', '').replace("'", "").replace("\\","")) if bid['description'] != None else 'null',
-                        bid['award_status'] if bid['award_status'] != None else "null",
-                        bid['paid_status'] if bid['paid_status'] != None else "null",
-                        bid['complete_status'] if bid['complete_status'] != None else "null",
-                        json.dumps(bid["time_awarded"]),
+            #print(project_id)
+            #print(url)
+            response = requests.get(url, headers=h, params=params)
+            offset += 100
+            #print(json.dumps(response.json()))
 
-                        bid['reputation']['earnings_score'] if bid['reputation']['earnings_score'] != None else -1,
-                        bid["reputation"]["entire_history"]["all"],
-                        bid["reputation"]["entire_history"]["complete"],
-                        bid["reputation"]["entire_history"]["on_time"],
-                        bid["reputation"]["entire_history"]["on_budget"],
-                        bid.get("reputation").get("entire_history").get("reviews"),
-                        bid.get("reputation").get("entire_history").get("overall"),
-                        bid.get("reputation").get("entire_history").get("category_ratings").get("communication"),
-                        bid.get("reputation").get("entire_history").get("category_ratings").get("expertise"),
-                        bid.get("reputation").get("entire_history").get("category_ratings").get("hire_again"),
-                        bid.get("reputation").get("entire_history").get("category_ratings").get("quality"),
-                        bid.get("reputation").get("entire_history").get("category_ratings").get("professionalism"),
-                        bid.get("reputation").get("last3months").get("all"),
-                        bid.get("reputation").get("last3months").get("complete"),
-                        bid.get("reputation").get("last3months").get("on_time"),
-                        bid.get("reputation").get("last3months").get("on_budget"),
-                        bid.get("reputation").get("last3months").get("reviews"),
-                        bid.get("reputation").get("last3months").get("overall"),
-                        bid.get("reputation").get("last3months").get("category_ratings").get("communication"),
-                        bid.get("reputation").get("last3months").get("category_ratings").get("expertise"),
-                        bid.get("reputation").get("last3months").get("category_ratings").get("hire_again"),
-                        bid.get("reputation").get("last3months").get("category_ratings").get("quality"),
-                        bid.get("reputation").get("last3months").get("category_ratings").get("professionalism"),
-                        bid.get("reputation").get("last12months").get("all"),
-                        bid.get("reputation").get("last12months").get("complete"),
-                        bid.get("reputation").get("last12months").get("on_time"),
-                        bid.get("reputation").get("last12months").get("on_budget"),
-                        bid.get("reputation").get("last12months").get("reviews"),
-                        bid.get("reputation").get("last12months").get("overall"),
-                        bid.get("reputation").get("last12months").get("category_ratings").get("communication"),
-                        bid.get("reputation").get("last12months").get("category_ratings").get("expertise"),
-                        bid.get("reputation").get("last12months").get("category_ratings").get("hire_again"),
-                        bid.get("reputation").get("last12months").get("category_ratings").get("quality"),
-                        bid.get("reputation").get("last12months").get("category_ratings").get("professionalism")
-                ])
+            if response.status_code == 200:
+                bids = response.json()['result']['bids']
+                users = response.json()['result']['users']
 
-                #get bidder information
-                if(bid['bidder_id'] != None):
-                    user_id = str(bid['bidder_id'])
-                    if user_id in users:
-                        user_info = users[user_id]
-
-                        result.append(user_info['avatar_large_cdn'].replace("'","") if user_info['avatar_large_cdn'] != None else "null")
-                        result.append(user_info['avatar_cdn'].replace("'","") if user_info['avatar_cdn'] != None else "null")
-                        try:
-                            result.append(json.dumps(user_info['membership_package']['name']).replace("'",""))
-                        except:
-                            result.append('null')
-
-                        result.append(user_info['portfolio_count'] if user_info['portfolio_count'] != None else -1)
-
-                        result.append(json.dumps(user_info['primary_language']).replace("'",""))
-                        try:
-                            result.append(json.dumps(user_info['primary_currency']['country']).replace("'",""))
-                        except:
-                            result.append('null')
-
-                        result.append(user_info['hourly_rate'] if user_info['hourly_rate'] != None else -1)
-
-                        try:
-                            result.append(json.dumps(user_info['location']['country']['name']).replace("'",""))
-                        except:
-                            result.append('null')
-                        try:
-                            result.append(json.dumps(user_info['location']['city']).replace("'",""))
-                        except:
-                            result.append('null')
-
-                        result.append(json.dumps(user_info['status']).replace("'",""))
-                        result.append(user_info['preferred_freelancer'] if user_info['preferred_freelancer'] != None else False)
-                        result.append(json.dumps(user_info['qualifications']).replace("'",""))
-
-                        try:
-                            result.append(json.dumps([q.get('type') for q in user_info['qualifications']]).replace("'",""))
-                        except:
-                            result.append("null")
-
-                        try:
-                            result.append(json.dumps([q.get('score_percentage') for q in user_info['qualifications']]).replace("'",""))
-                        except:
-                            result.append("null")
-
-                        try:
-                            result.append(json.dumps([q.get('user_percentile') for q in user_info['qualifications']]).replace("'",""))
-                        except:
-                            result.append("null")
-
-                    else:
-                        result.extend(["null","null", "null", -1, "null", "null", -1,"null","null","null", False, "null","null","null","null"])
+                if len(bids) == 0:
+                    hasBids = False
+                    break
                 else:
-                    result.extend(["null", "null", "null", -1, "null", "null", -1, "null", "null", "null", False, "null","null","null","null"])
+                    bids_count += len(bids)
+                    number_of_bids += len(bids)
+
+                for index,bid in enumerate(bids):
+                    result = []
+                    # get bid information
+                    result.extend([
+                            bid['id'],
+                            bid['project_id'] if bid['project_id'] != None else -1,
+                            bid['bidder_id'] if bid['bidder_id'] != None else -1,
+                            index,
+                            convert_utc_to_date(bid['time_submitted'] if bid['time_submitted'] != None else 0),
+                            bid['amount'] if bid['amount'] != None else -1,
+                            bid['hourly_rate'] if bid['hourly_rate'] != None else -1,
+                            bid['period'] if bid['period'] != None else -1,
+                            bid['hireme_counter_offer'] if bid['hireme_counter_offer'] != None else -1,
+                            bid['highlighted'] if bid['highlighted'] != None else False,
+                            bid['sponsored'] if bid['sponsored'] != None else -1,
+                            json.dumps(bid['negotiated_offer']).replace("'","").replace("\\",""),
+                            bid['retracted'] if bid['retracted'] != None else False,
+                            emoji_pattern.sub(r'', bid['description'].replace('\n', '')
+                                 .replace('\r', '').replace("'", "").replace("\\","")) if bid['description'] != None else 'null',
+                            bid['award_status'] if bid['award_status'] != None else "null",
+                            bid['paid_status'] if bid['paid_status'] != None else "null",
+                            bid['complete_status'] if bid['complete_status'] != None else "null",
+                            json.dumps(bid["time_awarded"]),
+
+                            bid['reputation']['earnings_score'] if bid['reputation']['earnings_score'] != None else -1,
+                            bid["reputation"]["entire_history"]["all"],
+                            bid["reputation"]["entire_history"]["complete"],
+                            bid["reputation"]["entire_history"]["on_time"],
+                            bid["reputation"]["entire_history"]["on_budget"],
+                            bid.get("reputation").get("entire_history").get("reviews"),
+                            bid.get("reputation").get("entire_history").get("overall"),
+                            bid.get("reputation").get("entire_history").get("category_ratings").get("communication"),
+                            bid.get("reputation").get("entire_history").get("category_ratings").get("expertise"),
+                            bid.get("reputation").get("entire_history").get("category_ratings").get("hire_again"),
+                            bid.get("reputation").get("entire_history").get("category_ratings").get("quality"),
+                            bid.get("reputation").get("entire_history").get("category_ratings").get("professionalism"),
+                            bid.get("reputation").get("last3months").get("all"),
+                            bid.get("reputation").get("last3months").get("complete"),
+                            bid.get("reputation").get("last3months").get("on_time"),
+                            bid.get("reputation").get("last3months").get("on_budget"),
+                            bid.get("reputation").get("last3months").get("reviews"),
+                            bid.get("reputation").get("last3months").get("overall"),
+                            bid.get("reputation").get("last3months").get("category_ratings").get("communication"),
+                            bid.get("reputation").get("last3months").get("category_ratings").get("expertise"),
+                            bid.get("reputation").get("last3months").get("category_ratings").get("hire_again"),
+                            bid.get("reputation").get("last3months").get("category_ratings").get("quality"),
+                            bid.get("reputation").get("last3months").get("category_ratings").get("professionalism"),
+                            bid.get("reputation").get("last12months").get("all"),
+                            bid.get("reputation").get("last12months").get("complete"),
+                            bid.get("reputation").get("last12months").get("on_time"),
+                            bid.get("reputation").get("last12months").get("on_budget"),
+                            bid.get("reputation").get("last12months").get("reviews"),
+                            bid.get("reputation").get("last12months").get("overall"),
+                            bid.get("reputation").get("last12months").get("category_ratings").get("communication"),
+                            bid.get("reputation").get("last12months").get("category_ratings").get("expertise"),
+                            bid.get("reputation").get("last12months").get("category_ratings").get("hire_again"),
+                            bid.get("reputation").get("last12months").get("category_ratings").get("quality"),
+                            bid.get("reputation").get("last12months").get("category_ratings").get("professionalism")
+                    ])
+
+                    #get bidder information
+                    if(bid['bidder_id'] != None):
+                        user_id = str(bid['bidder_id'])
+                        if user_id in users:
+                            user_info = users[user_id]
+
+                            result.append(user_info['avatar_large_cdn'].replace("'","").replace("\\","") if user_info['avatar_large_cdn'] != None else "null")
+                            result.append(user_info['avatar_cdn'].replace("'","").replace("\\","") if user_info['avatar_cdn'] != None else "null")
+                            try:
+                                result.append(json.dumps(user_info['membership_package']['name']).replace("'","").replace("\\",""))
+                            except:
+                                result.append('null')
+
+                            result.append(user_info['portfolio_count'] if user_info['portfolio_count'] != None else -1)
+
+                            result.append(json.dumps(user_info['primary_language']).replace("'","").replace("\\",""))
+                            try:
+                                result.append(json.dumps(user_info['primary_currency']['country']).replace("'","").replace("\\",""))
+                            except:
+                                result.append('null')
+
+                            result.append(user_info['hourly_rate'] if user_info['hourly_rate'] != None else -1)
+
+                            try:
+                                result.append(json.dumps(user_info['location']['country']['name']).replace("'","").replace("\\",""))
+                            except:
+                                result.append('null')
+                            try:
+                                result.append(json.dumps(user_info['location']['city']).replace("'","").replace("\\",""))
+                            except:
+                                result.append('null')
+
+                            result.append(json.dumps(user_info['status']).replace("'","").replace("\\",""))
+                            result.append(user_info['preferred_freelancer'] if user_info['preferred_freelancer'] != None else False)
+                            result.append(json.dumps(user_info['qualifications']).replace("'","").replace("\\",""))
+
+                            try:
+                                result.append(json.dumps([q.get('type') for q in user_info['qualifications']]).replace("'","").replace("\\",""))
+                            except:
+                                result.append("null")
+
+                            try:
+                                result.append(json.dumps([q.get('score_percentage') for q in user_info['qualifications']]).replace("'","").replace("\\",""))
+                            except:
+                                result.append("null")
+
+                            try:
+                                result.append(json.dumps([q.get('user_percentile') for q in user_info['qualifications']]).replace("'","").replace("\\",""))
+                            except:
+                                result.append("null")
+
+                        else:
+                            result.extend(["null","null", "null", -1, "null", "null", -1,"null","null","null", False, "null","null","null","null"])
+                    else:
+                        result.extend(["null", "null", "null", -1, "null", "null", -1, "null", "null", "null", False, "null","null","null","null"])
 
 
-                SQL_insert_bids = "REPLACE INTO BIDS(bids_id, project_id, user_id, position_rank, time_submitted, amount_offered,"\
-		                          "hourly_rate_offered, days_offered, hireme_counter_offer, highlighted, sponsored, negotiated_offer,"\
-                                  "retracted, application_entry, award_status, paid_status, complete_status, time_awarded,"\
-                                  "earning_score_category, njobs_all, njobs_completed_all,  pjobs_ontime_all,  pjobs_onbudget_all,"\
-                                  "nreviews_all, rating_all, rating_communication_all, rating_expertise_all, rating_hireagain_all,"\
-                                  "rating_quality_all, rating_professionalism_all, njobs_3months, njobs_completed_3months,"\
-                                  "pjobs_ontime_3months, pjobs_onbudget_3months, nreviews_3months, rating_3months, rating_communication_3months,"\
-                                  "rating_expertise_3months, rating_hireagain_3months, rating_quality_3months, rating_professionalism_3months,"\
-                                  "njobs_12months, njobs_completed_12months, pjobs_ontime_12months, pjobs_onbudget_12months, nreviews_12months,"\
-                                  "rating_12months, rating_communication_12months, rating_expertise_12months, rating_hireagain_12months,"\
-                                  "rating_quality_12months, rating_professionalism_12months, avatar_big_url, avatar_url, member_category,"\
-                                  "portolio_count, primary_language, primary_currency, freelancer_hourly_rate, country, city,"\
-                                  "status_verifications, prefered_freelancer,  qualifications,qualifications_type ,qualifications_score, qualifications_percentile) VALUES"\
-                                  " (%s, %s, %s, %s, '%s', %s, %s, %s, %s, %s, %s, '%s', %s, '%s', '%s',  '%s', '%s', '%s', %s, %s, %s, %s, %s, %s, %s,"\
-                                  " %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s," \
-                                  " %s, %s, '%s', '%s', '%s',  %s, '%s', '%s', %s, '%s', '%s', '%s', %s, '%s','%s','%s','%s')" % tuple(result)
-                #print(SQL_insert_bids)
-                cursor.execute(SQL_insert_bids)
-                connection.commit()
-                #print("iter %d bid %d finished"%(i, index))
-                #except:
-                #    error_sign = True
-                #    print('insert error at round %d iterator %d project_id %d'%(i,iter, project_list[iter]["id"]))
-                #    error_set.append(index)
-                #    connection.rollback()
-        else:
-            error = response.content
-            print(error)
-            print(i)
-            time.sleep(5)
-            ERROR_SIGN_REQUEST = True
-            break
+                    SQL_insert_bids = "REPLACE INTO BIDS(bids_id, project_id, user_id, position_rank, time_submitted, amount_offered,"\
+		                              "hourly_rate_offered, days_offered, hireme_counter_offer, highlighted, sponsored, negotiated_offer,"\
+                                      "retracted, application_entry, award_status, paid_status, complete_status, time_awarded,"\
+                                      "earning_score_category, njobs_all, njobs_completed_all,  pjobs_ontime_all,  pjobs_onbudget_all,"\
+                                      "nreviews_all, rating_all, rating_communication_all, rating_expertise_all, rating_hireagain_all,"\
+                                      "rating_quality_all, rating_professionalism_all, njobs_3months, njobs_completed_3months,"\
+                                      "pjobs_ontime_3months, pjobs_onbudget_3months, nreviews_3months, rating_3months, rating_communication_3months,"\
+                                      "rating_expertise_3months, rating_hireagain_3months, rating_quality_3months, rating_professionalism_3months,"\
+                                      "njobs_12months, njobs_completed_12months, pjobs_ontime_12months, pjobs_onbudget_12months, nreviews_12months,"\
+                                      "rating_12months, rating_communication_12months, rating_expertise_12months, rating_hireagain_12months,"\
+                                      "rating_quality_12months, rating_professionalism_12months, avatar_big_url, avatar_url, member_category,"\
+                                      "portolio_count, primary_language, primary_currency, freelancer_hourly_rate, country, city,"\
+                                      "status_verifications, prefered_freelancer,  qualifications,qualifications_type ,qualifications_score, qualifications_percentile) VALUES"\
+                                      " (%s, %s, %s, %s, '%s', %s, %s, %s, %s, %s, %s, '%s', %s, '%s', '%s',  '%s', '%s', '%s', %s, %s, %s, %s, %s, %s, %s,"\
+                                      " %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s," \
+                                      " %s, %s, '%s', '%s', '%s',  %s, '%s', '%s', %s, '%s', '%s', '%s', %s, '%s','%s','%s','%s')" % tuple(result)
+                    #print(SQL_insert_bids)
+                    cursor.execute(SQL_insert_bids)
+                    connection.commit()
+                    #print("iter %d bid %d finished"%(i, index))
+                    #except:
+                    #    error_sign = True
+                    #    print('insert error at round %d iterator %d project_id %d'%(i,iter, project_list[iter]["id"]))
+                    #    error_set.append(index)
+                    #    connection.rollback()
+            else:
+                error = response.content
+                print(error)
+                print(i)
+                ERROR_SIGN_REQUEST = True
+                token_index, token = generate_new_token(token_index)
+
+
 
         #save information to BIDS_PROGRESS
         if(ERROR_SIGN_BIDS == False and ERROR_SIGN_REQUEST == False):
@@ -352,7 +362,7 @@ def get_bids_info(project_list, times, cursor, connection):
         cursor.execute(SQL_SAVE_PROGRESS)
         connection.commit()
 
-    print("total bids extracted: %d"%(number_of_bids))
+        print("total bids extracted: %d"%(number_of_bids))
     return 0
 
 
